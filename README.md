@@ -24,6 +24,7 @@ bun install
 ```dotenv
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+VITE_APP_URL=... # e.g. https://your-deployed-domain.com
 ```
 
 3. Start dev server:
@@ -54,3 +55,16 @@ from public.quiz_results
 order by taken_at desc
 limit 10;
 ```
+
+## Auth redirect setup (important for email verification)
+
+If verification emails are sending users to localhost, configure both app and Supabase auth URLs:
+
+1. In Supabase Dashboard → Authentication → URL Configuration:
+	 - Set Site URL to your deployed domain.
+	 - Add Redirect URLs for both local and production, for example:
+		 - `http://localhost:5173/`
+		 - `https://your-deployed-domain.com/`
+2. Set `VITE_APP_URL` in your deployed environment to your production URL.
+
+The app uses `VITE_APP_URL` (or current origin fallback) as `emailRedirectTo` during sign-up.

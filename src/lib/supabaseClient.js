@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const appUrl = import.meta.env.VITE_APP_URL
 
 export const hasSupabase = Boolean(supabaseUrl && supabaseAnonKey)
 
@@ -32,9 +33,16 @@ export async function signUpWithEmail(email, password) {
     throw new Error('Supabase is not configured')
   }
 
+  const emailRedirectTo =
+    appUrl ||
+    (typeof window !== 'undefined' ? `${window.location.origin}/` : undefined)
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo,
+    },
   })
 
   if (error) {
