@@ -3,6 +3,7 @@ import Landing from './pages/Landing'
 import Quiz from './pages/Quiz'
 import Results from './pages/Results'
 import Resource from './pages/Resource'
+import AllResources from './pages/AllResources'
 import Analytics from './pages/Analytics'
 import MyProgress from './pages/MyProgress'
 
@@ -17,6 +18,9 @@ function AppShell() {
           Interview Anxiety Tool
         </Link>
         <div className="flex items-center gap-4">
+          <Link to="/resources" className="text-teal-700 transition hover:text-teal-800">
+            All Resources
+          </Link>
           <Link to="/my-progress" className="text-teal-700 transition hover:text-teal-800">
             My Progress
           </Link>
@@ -36,6 +40,7 @@ function AppShell() {
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/results" element={<Results />} />
           <Route path="/resource" element={<Resource />} />
+          <Route path="/resources" element={<AllResources />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/my-progress" element={<MyProgress />} />
           <Route path="*" element={<Navigate to="/" replace />} />

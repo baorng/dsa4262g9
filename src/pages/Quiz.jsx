@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ProgressBar from '../components/ProgressBar'
 import QuestionCard from '../components/QuestionCard'
@@ -13,9 +13,19 @@ import {
 } from '../lib/session'
 import { getCurrentAuthUser, getNextAttemptNumber, hasSupabase, insertQuizResult } from '../lib/supabaseClient'
 
+function shuffleQuestions(items) {
+  const shuffled = [...items]
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    ;[shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]]
+  }
+  return shuffled
+}
+
 function Quiz() {
   const navigate = useNavigate()
-  const [answers, setAnswers] = useState(Array(questions.length).fill(null))
+  const randomizedQuestions = useMemo(() => shuffleQuestions(questions), [])
+  const [answers, setAnswers] = useState(Array(randomizedQuestions.length).fill(null))
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
   const [isAdvancing, setIsAdvancing] = useState(false)
@@ -27,7 +37,7 @@ function Quiz() {
   })
   const advanceTimeoutRef = useRef(null)
 
-  const isLastQuestion = currentIndex === questions.length - 1
+  const isLastQuestion = currentIndex === randomizedQuestions.length - 1
 
   useEffect(() => {
     return () => {
@@ -100,7 +110,7 @@ function Quiz() {
     if (!isLastQuestion) {
       setIsAdvancing(true)
       advanceTimeoutRef.current = setTimeout(() => {
-        setCurrentIndex((previous) => Math.min(previous + 1, questions.length - 1))
+        setCurrentIndex((previous) => Math.min(previous + 1, randomizedQuestions.length - 1))
         setIsAdvancing(false)
         advanceTimeoutRef.current = null
       }, 220)
@@ -129,7 +139,7 @@ function Quiz() {
 
     setIsAdvancing(true)
     advanceTimeoutRef.current = setTimeout(() => {
-      setCurrentIndex((previous) => Math.min(previous + 1, questions.length - 1))
+      setCurrentIndex((previous) => Math.min(previous + 1, randomizedQuestions.length - 1))
       setIsAdvancing(false)
       advanceTimeoutRef.current = null
     }, 180)
@@ -145,7 +155,12 @@ function Quiz() {
 
     setIncompleteNotice('')
 
-    const assessment = computeAssessment(answers)
+    const orderedAnswers = Array(randomizedQuestions.length).fill(null)
+    randomizedQuestions.forEach((question, index) => {
+      orderedAnswers[question.id - 1] = answers[index]
+    })
+
+    const assessment = computeAssessment(orderedAnswers)
     let sessionId = ensureSessionId()
     let attemptNumber = getNextLocalAttemptNumber(sessionId)
     let saveError = null
@@ -173,8 +188,8 @@ function Quiz() {
       performance_score: assessment.scores.performance,
       behavioural_score: assessment.scores.behavioural,
       dominant_type: assessment.dominantType,
-      raw_responses: answers.reduce((result, value, index) => {
-        result[`Q${index + 1}`] = value
+      raw_responses: randomizedQuestions.reduce((result, question, index) => {
+        result[`Q${question.id}`] = answers[index]
         return result
       }, {}),
     }
@@ -273,7 +288,7 @@ function Quiz() {
         </div>
 
         <div className="mt-3">
-          <ProgressBar current={currentIndex + 1} total={questions.length} />
+          <ProgressBar current={currentIndex + 1} total={randomizedQuestions.length} />
         </div>
 
         <p className="mt-2 text-xs text-slate-500">
@@ -282,7 +297,7 @@ function Quiz() {
       </header>
 
       <section className="relative h-[420px] overflow-hidden rounded-3xl border border-orange-100 bg-orange-50/50 p-4 shadow-sm md:p-5">
-        {questions.map((question, index) => {
+        {randomizedQuestions.map((question, index) => {
           const isCurrent = index === currentIndex
           const style = getCardStyle(index)
 

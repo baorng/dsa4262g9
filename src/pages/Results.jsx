@@ -250,6 +250,12 @@ function Results() {
           Get Your Resource
         </Link>
         <Link
+          to="/resources"
+          className="rounded-full border border-orange-300 px-6 py-3 font-semibold text-orange-700 transition hover:bg-orange-50"
+        >
+          Browse All Resources
+        </Link>
+        <Link
           to="/quiz"
           className="rounded-full border border-teal-600 px-6 py-3 font-semibold text-teal-700 transition hover:bg-teal-50"
         >
